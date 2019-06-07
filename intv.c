@@ -15,7 +15,7 @@
  * 
  * In modules, these variables also have to be declared as MODULE_CONFIG.
  */
-static CONFIG_INT("intv.counter", hello_counter, 0);
+static CONFIG_INT("intv.counter", intv_counter, 0);
 
 
 /* This function runs as a new DryOS task, in parallel with everything else.
@@ -32,7 +32,7 @@ static CONFIG_INT("intv.counter", hello_counter, 0);
  * and Canon's powersave will be disabled while this task is running.
  * Both are done for convenience.
  */
-static void hello_task()
+static void intv_task()
 {
     /* Open the console. */
     /* Also wait for background tasks to settle after closing ML menu */
@@ -42,12 +42,12 @@ static void hello_task()
 
     /* Plain printf goes to console. */
     /* There's very limited stdio support available. */
-    printf("Hello, World!\n");
-    printf("You have run this demo %d times.\n", ++hello_counter);
+    printf("Intervalometer started\n");
+    printf("You have run this demo %d times.\n", ++intv_counter);
     printf("Press the shutter halfway to take a pic\n");
 
     /* note: half-shutter is one of the few keys that can be checked from a regular task */
-    /* to hook other keys, you need to use a keypress hook - see hello2 */
+    /* to hook other keys, you need to use a keypress hook - see intv2 */
     while (!get_halfshutter_pressed())
     {
         /* while waiting for something, we must be nice to other tasks as well and allow them to run */
@@ -67,29 +67,29 @@ static void hello_task()
     console_hide();
 }
 
-static struct menu_entry hello_menu[] =
+static struct menu_entry intv_menu[] =
 {
     {
-        .name       = "intv Hello, World!",
+        .name       = "Start intv",
         .select     = run_in_separate_task,
-        .priv       = hello_task,
-        .help       = "Prints 'Hello, World!' on the console.",
+        .priv       = intv_task,
+        .help       = "Start intervalometer",
     },
 };
 
 /* This function is called when the module loads. */
 /* All the module init functions are called sequentially,
  * in alphabetical order. */
-static unsigned int hello_init()
+static unsigned int intv_init()
 {
-    menu_add("Debug", hello_menu, COUNT(hello_menu));
+    menu_add("Debug", intv_menu, COUNT(intv_menu));
     return 0;
 }
 
 /* Note: module unloading is not yet supported;
  * this function is provided for future use.
  */
-static unsigned int hello_deinit()
+static unsigned int intv_deinit()
 {
     return 0;
 }
@@ -98,10 +98,10 @@ static unsigned int hello_deinit()
  * config variables, event hooks, property handlers etc.
  */
 MODULE_INFO_START()
-    MODULE_INIT(hello_init)
-    MODULE_DEINIT(hello_deinit)
+    MODULE_INIT(intv_init)
+    MODULE_DEINIT(intv_deinit)
 MODULE_INFO_END()
 
 MODULE_CONFIGS_START()
-    MODULE_CONFIG(hello_counter)
+    MODULE_CONFIG(intv_counter)
 MODULE_CONFIGS_END()
