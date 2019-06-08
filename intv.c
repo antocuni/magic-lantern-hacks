@@ -66,7 +66,7 @@ static struct menu_entry intv_menu[] = {
                 .min = 0,
                 .max = 999,
                 .unit = UNIT_DEC,
-                .help = "Number of pictures to take (0 for infinite)"
+                .help = "Number of pictures to take"
             },
             {
                 .name = "Start after",
