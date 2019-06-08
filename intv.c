@@ -14,7 +14,7 @@ static CONFIG_INT("intv.start_delay", intv_start_delay, 2);
 static CONFIG_INT("intv.count", intv_count, 0);
 static CONFIG_INT("intv.delay_between", intv_delay_between, 500); /* ms */
 static CONFIG_INT("intv.task_delay", intv_task_delay, 200); /* ms */
-static int intv_enabled = 0;
+static int intv_enabled = 1;
 
 static void wait_for_half_shutter(void)
 {
