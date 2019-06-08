@@ -12,6 +12,7 @@
 
 static CONFIG_INT("intv.start_delay", intv_start_delay, 2);
 static CONFIG_INT("intv.count", intv_count, 0);
+static CONFIG_INT("intv.delay_between", intv_delay_between, 500); /* ms */
 static CONFIG_INT("intv.task_delay", intv_task_delay, 200); /* ms */
 static int intv_enabled = 0;
 
@@ -23,6 +24,17 @@ static void wait_for_half_shutter(void)
     }
 }
 
+/* wait ms millisecond at most; if the use press halfshutter, exit early and
+   return false, else return true */
+static int wait_ms_maybe(int ms) {
+    for(int i=0; i<ms/100; i++) {
+        msleep(100);
+        if (get_halfshutter_pressed())
+            return false;
+    }
+    return true;
+}
+
 static void intv_task()
 {
     msleep(intv_task_delay);
@@ -32,16 +44,27 @@ static void intv_task()
         clrscr();
         bmp_printf(FONT_LARGE, 50, 310,
                    "Countdown: %d\n"
-                   "Pictures to take: %d",
+                   "Pictures to take: %d\n"
+                   "Press half-shutter to exit",
                    i, intv_count);
-        msleep(1000);
+        if (!wait_ms_maybe(1000))
+            goto cleanup;
     }
 
     for(int taken = 0; taken < intv_count; taken++) {
-        take_a_pic(false);
         clrscr();
-        bmp_printf(FONT_LARGE, 50, 310, "Pictures taken: %d", taken+1);
+        take_a_pic(false);
+        bmp_printf(FONT_LARGE, 50, 310,
+                   "Pictures taken: %d\n"
+                   "Press half-shutter to exit", taken+1);
+        if (!wait_ms_maybe(intv_delay_between))
+            goto cleanup;
     }
+
+ cleanup:
+    clrscr();
+    bmp_printf(FONT_LARGE, 50, 310, "Intervalometer stopped!");
+    msleep(500);
     clrscr();
 }
 
@@ -78,11 +101,20 @@ static struct menu_entry intv_menu[] = {
                 .help = "Start shooting after X seconds",
             },
             {
+                .name = "Delay between shots",
+                .priv = &intv_delay_between,
+                .min = 0,
+                .max = 5000,
+                .icon_type = IT_PERCENT,
+                .unit = UNIT_DEC,
+                .help = "ms to wait between each shot",
+            },
+            {
                 .name = "Task delay (DEBUG)",
                 .priv = &intv_task_delay,
                 .min = 0,
                 .max = 5000,
-                .icon_type = IT_PERCENT,
+                .icon_type = IT_AUTO,
                 .unit = UNIT_DEC,
                 .help = "ms to wait before starting the task",
             },
@@ -111,5 +143,6 @@ MODULE_INFO_END()
 MODULE_CONFIGS_START()
     MODULE_CONFIG(intv_start_delay)
     MODULE_CONFIG(intv_count)
+    MODULE_CONFIG(intv_delay_between)
     MODULE_CONFIG(intv_task_delay)
 MODULE_CONFIGS_END()
