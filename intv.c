@@ -12,6 +12,8 @@
 
 static CONFIG_INT("intv.start_delay", intv_start_delay, 2);
 static CONFIG_INT("intv.count", intv_count, 0);
+static CONFIG_INT("intv.use_bulb", intv_use_bulb, 0); /* bool */
+static CONFIG_INT("intv.bulb_time", intv_bulb_time, 60); /* seconds */
 static CONFIG_INT("intv.delay_between", intv_delay_between, 500); /* ms */
 static CONFIG_INT("intv.task_delay", intv_task_delay, 200); /* ms */
 static int intv_enabled = 1;
@@ -53,7 +55,12 @@ static void intv_task()
 
     for(int taken = 0; taken < intv_count; taken++) {
         clrscr();
-        take_a_pic(false);
+        if (intv_use_bulb) {
+            bulb_take_pic(intv_bulb_time*1000);
+        }
+        else {
+            take_a_pic(false);
+        }
         bmp_printf(FONT_LARGE, 50, 310,
                    "Pictures taken: %d\n"
                    "Press half-shutter to exit", taken+1);
@@ -91,6 +98,23 @@ static struct menu_entry intv_menu[] = {
                 .unit = UNIT_DEC,
                 .help = "Number of pictures to take"
             },
+            {
+                .name = "Use bulb",
+                .priv = &intv_use_bulb,
+                .min = 0,
+                .max = 1,
+                .help = "Use the bulb mode",
+            },
+            {
+                .name = "Bulb time",
+                .priv = &intv_bulb_time,
+                .min = 0,
+                .max = TIME_MAX_VALUE,
+                .icon_type = IT_PERCENT,
+                .unit = UNIT_TIME,
+                .help = "Bulb time",
+            },
+
             {
                 .name = "Start after",
                 .priv = &intv_start_delay,
@@ -143,6 +167,8 @@ MODULE_INFO_END()
 MODULE_CONFIGS_START()
     MODULE_CONFIG(intv_start_delay)
     MODULE_CONFIG(intv_count)
+    MODULE_CONFIG(intv_use_bulb)
+    MODULE_CONFIG(intv_bulb_time)
     MODULE_CONFIG(intv_delay_between)
     MODULE_CONFIG(intv_task_delay)
 MODULE_CONFIGS_END()
