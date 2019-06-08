@@ -8,6 +8,7 @@
 #include <shoot.h>
 
 static CONFIG_INT("intv.counter", intv_counter, 0);
+static int intv_enabled = 0;
 
 
 static void intv_task()
@@ -36,19 +37,30 @@ static void intv_task()
     console_hide();
 }
 
-static struct menu_entry intv_menu[] =
-{
+static struct menu_entry intv_menu[] = {
     {
-        .name       = "Start intv",
-        .select     = run_in_separate_task,
-        .priv       = intv_task,
-        .help       = "Start intervalometer",
+        .name = "My Intervalometer",
+        .priv = &intv_enabled,
+        .select = menu_open_submenu,
+        .max = 1,
+        .help = "My custom and hackish intervalomenter",
+        .children = (struct menu_entry[])
+        {
+            {
+                .name       = "Start intv",
+                .select     = run_in_separate_task,
+                .priv       = intv_task,
+                .help       = "Start intervalometer",
+            },
+            MENU_EOL,
+        },
     },
 };
 
+
 static unsigned int intv_init()
 {
-    menu_add("Debug", intv_menu, COUNT(intv_menu));
+    menu_add("Shoot", intv_menu, COUNT(intv_menu));
     return 0;
 }
 
