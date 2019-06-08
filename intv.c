@@ -11,6 +11,7 @@
 
 static CONFIG_INT("intv.start_delay", intv_start_delay, 2);
 static CONFIG_INT("intv.count", intv_count, 0);
+static CONFIG_INT("intv.task_delay", intv_task_delay, 200); /* ms */
 static int intv_enabled = 0;
 
 static void wait_for_half_shutter(void)
@@ -23,7 +24,7 @@ static void wait_for_half_shutter(void)
 
 static void intv_task()
 {
-    msleep(2000);
+    msleep(intv_task_delay);
     console_clear();
     console_show();
 
@@ -55,6 +56,12 @@ static struct menu_entry intv_menu[] = {
         .children = (struct menu_entry[])
         {
             {
+                .name       = "Start shooting!",
+                .select     = run_in_separate_task,
+                .priv       = intv_task,
+                .help       = "Start intervalometer",
+            },
+            {
                 .name = "Pictures to take",
                 .priv = &intv_count,
                 .min = 0,
@@ -72,10 +79,13 @@ static struct menu_entry intv_menu[] = {
                 .help = "Start shooting after X seconds",
             },
             {
-                .name       = "Start shooting!",
-                .select     = run_in_separate_task,
-                .priv       = intv_task,
-                .help       = "Start intervalometer",
+                .name = "Task delay (DEBUG)",
+                .priv = &intv_task_delay,
+                .min = 0,
+                .max = 5000,
+                .icon_type = IT_PERCENT,
+                .unit = UNIT_DEC,
+                .help = "ms to wait before starting the task",
             },
             MENU_EOL,
         },
@@ -102,4 +112,5 @@ MODULE_INFO_END()
 MODULE_CONFIGS_START()
     MODULE_CONFIG(intv_start_delay)
     MODULE_CONFIG(intv_count)
+    MODULE_CONFIG(intv_task_delay)
 MODULE_CONFIGS_END()
