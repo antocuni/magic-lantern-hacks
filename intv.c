@@ -6,6 +6,7 @@
 #include <config.h>
 #include <console.h>
 #include <shoot.h>
+#include <bmp.h>
 
 #define TIME_MAX_VALUE 28800 //8 hours
 
@@ -25,25 +26,23 @@ static void wait_for_half_shutter(void)
 static void intv_task()
 {
     msleep(intv_task_delay);
-    console_clear();
-    console_show();
 
     /* wait to start */
-    printf("Pictures to take: %d\n", intv_count);
     for(int i=intv_start_delay; i>0; i--) {
-        printf("%d...\n", i);
+        clrscr();
+        bmp_printf(FONT_LARGE, 50, 310,
+                   "Countdown: %d\n"
+                   "Pictures to take: %d",
+                   i, intv_count);
         msleep(1000);
     }
 
     for(int taken = 0; taken < intv_count; taken++) {
         take_a_pic(false);
-        printf("Pictures taken: %d\n", taken+1);
+        clrscr();
+        bmp_printf(FONT_LARGE, 50, 310, "Pictures taken: %d", taken+1);
     }
-
-    printf("Intervalometer done\n");
-    printf("Press the shutter halfway to finish\n");
-    wait_for_half_shutter();
-    console_hide();
+    clrscr();
 }
 
 static struct menu_entry intv_menu[] = {
