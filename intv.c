@@ -7,6 +7,9 @@
 #include <console.h>
 #include <shoot.h>
 
+#define TIME_MAX_VALUE 28800 //8 hours
+
+static CONFIG_INT("intv.start_delay", intv_start_delay, 2);
 static CONFIG_INT("intv.count", intv_count, 0);
 static int intv_enabled = 0;
 
@@ -24,10 +27,12 @@ static void intv_task()
     console_clear();
     console_show();
 
-    printf("Intervalometer started\n");
+    /* wait to start */
     printf("Pictures to take: %d\n", intv_count);
-    printf("Press the shutter halfway to start\n");
-    wait_for_half_shutter();
+    for(int i=intv_start_delay; i>0; i--) {
+        printf("%d...\n", i);
+        msleep(1000);
+    }
 
     for(int taken = 0; taken < intv_count; taken++) {
         take_a_pic(false);
@@ -58,7 +63,16 @@ static struct menu_entry intv_menu[] = {
                 .help = "Number of pictures to take (0 for infinite)"
             },
             {
-                .name       = "Start intv",
+                .name = "Start after",
+                .priv = &intv_start_delay,
+                .min = 0,
+                .max = TIME_MAX_VALUE,
+                .icon_type = IT_PERCENT,
+                .unit = UNIT_TIME,
+                .help = "Start shooting after X seconds",
+            },
+            {
+                .name       = "Start shooting!",
                 .select     = run_in_separate_task,
                 .priv       = intv_task,
                 .help       = "Start intervalometer",
@@ -86,5 +100,6 @@ MODULE_INFO_START()
 MODULE_INFO_END()
 
 MODULE_CONFIGS_START()
+    MODULE_CONFIG(intv_start_delay)
     MODULE_CONFIG(intv_count)
 MODULE_CONFIGS_END()
