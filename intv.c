@@ -7,7 +7,7 @@
 #include <console.h>
 #include <shoot.h>
 
-static CONFIG_INT("intv.counter", intv_counter, 0);
+static CONFIG_INT("intv.count", intv_count, 0);
 static int intv_enabled = 0;
 
 
@@ -18,8 +18,8 @@ static void intv_task()
     console_show();
 
     printf("Intervalometer started\n");
-    printf("You have run this demo %d times.\n", ++intv_counter);
-    printf("Press the shutter halfway to take a pic\n");
+    printf("Pictures to take: %d\n", intv_count);
+    printf("Press the shutter halfway to start\n");
 
     while (!get_halfshutter_pressed())
     {
@@ -46,6 +46,14 @@ static struct menu_entry intv_menu[] = {
         .help = "My custom and hackish intervalomenter",
         .children = (struct menu_entry[])
         {
+            {
+                .name = "Pictures to take",
+                .priv = &intv_count,
+                .min = 0,
+                .max = 999,
+                .unit = UNIT_DEC,
+                .help = "Number of pictures to take (0 for infinite)"
+            },
             {
                 .name       = "Start intv",
                 .select     = run_in_separate_task,
@@ -75,5 +83,5 @@ MODULE_INFO_START()
 MODULE_INFO_END()
 
 MODULE_CONFIGS_START()
-    MODULE_CONFIG(intv_counter)
+    MODULE_CONFIG(intv_count)
 MODULE_CONFIGS_END()
