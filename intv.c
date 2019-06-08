@@ -31,7 +31,7 @@ static void intv_task()
 
     for(int taken = 0; taken < intv_count; taken++) {
         take_a_pic(false);
-        printf("Pictures taken: %d\n", taken);
+        printf("Pictures taken: %d\n", taken+1);
     }
 
     printf("Intervalometer done\n");
