@@ -10,6 +10,13 @@
 static CONFIG_INT("intv.count", intv_count, 0);
 static int intv_enabled = 0;
 
+static void wait_for_half_shutter(void)
+{
+    while (!get_halfshutter_pressed())
+    {
+        msleep(100);
+    }
+}
 
 static void intv_task()
 {
@@ -20,20 +27,16 @@ static void intv_task()
     printf("Intervalometer started\n");
     printf("Pictures to take: %d\n", intv_count);
     printf("Press the shutter halfway to start\n");
+    wait_for_half_shutter();
 
-    while (!get_halfshutter_pressed())
-    {
-        msleep(100);
+    for(int taken = 0; taken < intv_count; taken++) {
+        take_a_pic(false);
+        printf("Pictures taken: %d\n", taken);
     }
 
-    printf("Taking a pic...\n");
-    take_a_pic(false);
-    printf("Press the shutter halfway to exit.\n");
-    while (!get_halfshutter_pressed())
-    {
-        msleep(100);
-    }
-
+    printf("Intervalometer done\n");
+    printf("Press the shutter halfway to finish\n");
+    wait_for_half_shutter();
     console_hide();
 }
 
